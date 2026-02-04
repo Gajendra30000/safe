@@ -1,4 +1,4 @@
-import { Request, Response } from 'express';
+import { Request, Response, RequestHandler } from 'express';
 import Discussion from '../models/Discussion';
 import Reply from '../models/Reply';
 import Vote from '../models/Vote';
@@ -10,7 +10,7 @@ interface AuthenticatedRequest extends Request {
   };
 }
 
-export const createDiscussion = async (req: AuthenticatedRequest, res: Response) => {
+export const createDiscussion: RequestHandler = async (req, res) => {
   try {
     const { title, content, category, tags, latitude, longitude, imageUrl } = req.body;
     const userId = (req as any).userId;
@@ -69,7 +69,7 @@ export const createDiscussion = async (req: AuthenticatedRequest, res: Response)
   }
 };
 
-export const getDiscussions = async (req: Request, res: Response) => {
+export const getDiscussions: RequestHandler = async (req, res) => {
   try {
     const { category, sort = 'recent', search, page = 1, limit = 20, radius, latitude, longitude } = req.query;
     const query: any = {};
@@ -131,7 +131,7 @@ export const getDiscussions = async (req: Request, res: Response) => {
   }
 };
 
-export const getDiscussionById = async (req: Request, res: Response) => {
+export const getDiscussionById: RequestHandler = async (req, res) => {
   try {
     const { id } = req.params;
 
@@ -161,7 +161,7 @@ export const getDiscussionById = async (req: Request, res: Response) => {
   }
 };
 
-export const updateDiscussion = async (req: AuthenticatedRequest, res: Response) => {
+export const updateDiscussion: RequestHandler = async (req, res) => {
   try {
     const { id } = req.params;
     const { title, content, tags } = req.body;
@@ -212,7 +212,7 @@ export const updateDiscussion = async (req: AuthenticatedRequest, res: Response)
   }
 };
 
-export const deleteDiscussion = async (req: AuthenticatedRequest, res: Response) => {
+export const deleteDiscussion: RequestHandler = async (req, res) => {
   try {
     const { id } = req.params;
     const userId = (req as any).userId;
@@ -257,7 +257,7 @@ export const deleteDiscussion = async (req: AuthenticatedRequest, res: Response)
   }
 };
 
-export const createReply = async (req: AuthenticatedRequest, res: Response) => {
+export const createReply: RequestHandler = async (req, res) => {
   try {
     const { id } = req.params;
     const { content } = req.body;
@@ -311,7 +311,7 @@ export const createReply = async (req: AuthenticatedRequest, res: Response) => {
   }
 };
 
-export const getReplies = async (req: Request, res: Response) => {
+export const getReplies: RequestHandler = async (req, res) => {
   try {
     const { id } = req.params;
     const { sort = 'recent', page = 1, limit = 20 } = req.query;
@@ -349,7 +349,7 @@ export const getReplies = async (req: Request, res: Response) => {
   }
 };
 
-export const toggleVote = async (req: AuthenticatedRequest, res: Response) => {
+export const toggleVote: RequestHandler = async (req, res) => {
   try {
     const { targetId, targetType, voteType } = req.body;
     const userId = (req as any).userId;
@@ -417,7 +417,7 @@ export const toggleVote = async (req: AuthenticatedRequest, res: Response) => {
   }
 };
 
-export const getUserVotes = async (req: AuthenticatedRequest, res: Response) => {
+export const getUserVotes: RequestHandler = async (req, res) => {
   try {
     const { targetIds, targetType } = req.query;
     const userId = (req as any).userId;
@@ -452,7 +452,7 @@ export const getUserVotes = async (req: AuthenticatedRequest, res: Response) => 
   }
 };
 
-export const getCategories = async (req: Request, res: Response) => {
+export const getCategories: RequestHandler = async (req, res) => {
   try {
     const categories = [
       { id: 'frontend', name: 'Frontend', icon: '🎨', color: '#32CD32' },
