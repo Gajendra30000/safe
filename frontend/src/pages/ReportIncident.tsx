@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { useLocation } from '../contexts/LocationContext';
 import axios from 'axios';
+import toast from 'react-hot-toast';
+import { Image as ImageIcon, X } from 'lucide-react';
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -28,9 +30,10 @@ const ReportIncident: React.FC = () => {
     reporterName: user?.name || '',
   });
   const [loading, setLoading] = useState(false);
-  const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
   const [currentLocation, setCurrentLocation] = useState<{ lat: number; lng: number } | null>(null);
   const [address, setAddress] = useState<string>('');
+  const [selectedImages, setSelectedImages] = useState<File[]>([]);
+  const [imagePreviews, setImagePreviews] = useState<string[]>([]);
 
   useEffect(() => {
     if (location) {
@@ -71,14 +74,41 @@ const ReportIncident: React.FC = () => {
     }
   };
 
+  const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {  const files = Array.from(e.target.files || []);
+    const validFiles = files.filter(file => file.size <= 5 * 1024 * 1024);
+    
+    if (validFiles.length !== files.length) {
+      toast.error('Some images were skipped (max 5MB per image)');
+    }
+    
+    if (selectedImages.length + validFiles.length > 3) {
+      toast.error('Maximum 3 images allowed');
+      return;
+    }
+    
+    setSelectedImages(prev => [...prev, ...validFiles]);
+    
+    validFiles.forEach(file => {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreviews(prev => [...prev, reader.result as string]);
+      };
+      reader.readAsDataURL(file);
+    });
+  };
+
+  const removeImage = (index: number) => {
+    setSelectedImages(prev => prev.filter((_, i) => i !== index));
+    setImagePreviews(prev => prev.filter((_, i) => i !== index));
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    setMessage(null);
 
     try {
       if (!currentLocation) {
-        setMessage({ type: 'error', text: 'Please enable location services to report an incident' });
+        toast.error('Please enable location services to report an incident');
         setLoading(false);
         return;
       }
@@ -100,11 +130,36 @@ const ReportIncident: React.FC = () => {
           coordinates: [currentLocation.lng, currentLocation.lat],
           address: address || 'Unknown location',
         },
+        photos: [] as string[],
       };
+
+      // Upload images if any
+      if (selectedImages.length > 0) {
+        try {
+          const uploadPromises = selectedImages.map(async (image) => {
+            const imageFormData = new FormData();
+            imageFormData.append('image', image);
+            
+            const response = await axios.post(`${API_URL}/upload/image`, imageFormData, {
+              headers: { 'Content-Type': 'multipart/form-data' }
+            });
+            
+            return response.data.url;
+          });
+          
+          const uploadedUrls = await Promise.all(uploadPromises);
+          incidentData.photos = uploadedUrls;
+        } catch (uploadError) {
+          console.error('Error uploading images:', uploadError);
+          toast.error('Failed to upload images. Please try again.');
+          setLoading(false);
+          return;
+        }
+      }
 
       await axios.post(`${API_URL}/incidents`, incidentData, { headers });
 
-      setMessage({ type: 'success', text: 'Incident reported successfully!' });
+      toast.success('Incident reported successfully! 🎉');
       
       // Reset form
       setFormData({
@@ -116,12 +171,13 @@ const ReportIncident: React.FC = () => {
         isAnonymous: false,
         reporterName: user?.name || '',
       });
+      setSelectedImages([]);
+      setImagePreviews([]);
     } catch (error: any) {
       console.error('Error reporting incident:', error);
-      setMessage({
-        type: 'error',
-        text: error.response?.data?.message || 'Failed to report incident. Please try again.',
-      });
+      toast.error(
+        error.response?.data?.message || 'Failed to report incident. Please try again.'
+      );
     } finally {
       setLoading(false);
     }
@@ -137,18 +193,6 @@ const ReportIncident: React.FC = () => {
           <p className="text-gray-600 dark:text-gray-400 mb-6">
             Help make your community safer by reporting incidents. You can choose to report anonymously.
           </p>
-
-          {message && (
-            <div
-              className={`mb-6 p-4 rounded-lg ${
-                message.type === 'success'
-                  ? 'bg-green-50 dark:bg-green-900/20 text-green-800 dark:text-green-200'
-                  : 'bg-red-50 dark:bg-red-900/20 text-red-800 dark:text-red-200'
-              }`}
-            >
-              {message.text}
-            </div>
-          )}
 
           <form onSubmit={handleSubmit} className="space-y-6">
             {/* Anonymous Toggle */}
@@ -280,6 +324,51 @@ const ReportIncident: React.FC = () => {
               <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
                 {formData.description.length}/2000 characters
               </p>
+            </div>
+
+            {/* Image Upload */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Add Photos (Optional - Max 3)
+              </label>
+              
+              {imagePreviews.length > 0 && (
+                <div className="grid grid-cols-3 gap-3 mb-3">
+                  {imagePreviews.map((preview, index) => (
+                    <div key={index} className="relative">
+                      <img
+                        src={preview}
+                        alt={`Preview ${index + 1}`}
+                        className="w-full h-32 object-cover rounded-lg"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => removeImage(index)}
+                        className="absolute top-1 right-1 p-1 bg-red-500 text-white rounded-full hover:bg-red-600"
+                      >
+                        <X className="w-4 h-4" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+              
+              {selectedImages.length < 3 && (
+                <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-gray-300 dark:border-gray-600 border-dashed rounded-lg cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 transition">
+                  <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                    <ImageIcon className="w-8 h-8 mb-2 text-gray-400" />
+                    <p className="text-sm text-gray-500 dark:text-gray-400">Click to upload images</p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">PNG, JPG up to 5MB each</p>
+                  </div>
+                  <input
+                    type="file"
+                    className="hidden"
+                    accept="image/*"
+                    multiple
+                    onChange={handleImageSelect}
+                  />
+                </label>
+              )}
             </div>
 
             {/* Location Info */}

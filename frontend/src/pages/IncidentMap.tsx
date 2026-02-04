@@ -29,7 +29,7 @@ const IncidentMap: React.FC = () => {
   const [filters, setFilters] = useState({
     category: '',
     severity: '',
-    radius: '5',
+    radius: 'all',
   });
 
   useEffect(() => {
@@ -41,7 +41,8 @@ const IncidentMap: React.FC = () => {
     try {
       const params: any = {};
       
-      if (location) {
+      // Only add location params if radius is not 'all'
+      if (location && filters.radius !== 'all') {
         params.latitude = location.latitude;
         params.longitude = location.longitude;
         params.radius = filters.radius;
@@ -158,17 +159,17 @@ const IncidentMap: React.FC = () => {
 
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Radius (km)
+                Radius
               </label>
               <select
                 value={filters.radius}
                 onChange={(e) => setFilters({ ...filters, radius: e.target.value })}
                 className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700 dark:text-white"
               >
-                <option value="1">1 km</option>
+                <option value="all">All Locations</option>
                 <option value="5">5 km</option>
                 <option value="10">10 km</option>
-                <option value="25">25 km</option>
+                <option value="20">20 km</option>
                 <option value="50">50 km</option>
               </select>
             </div>

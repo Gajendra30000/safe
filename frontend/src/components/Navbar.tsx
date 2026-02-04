@@ -28,40 +28,69 @@ export default function Navbar() {
           </Link>
 
           {/* Desktop Navigation */}
-          {user && (
-            <div className="hidden md:flex items-center space-x-6">
-              <Link
-                to="/dashboard"
-                className="text-gray-300 hover:text-primary transition"
-              >
-                Dashboard
-              </Link>
-              <Link
-                to="/emergency"
-                className="text-gray-300 hover:text-primary transition"
-              >
-                Emergency
-              </Link>
-              <Link
-                to="/incidents"
-                className="text-gray-300 hover:text-primary transition"
-              >
-                Incidents
-              </Link>
-              <Link
-                to="/community"
-                className="text-gray-300 hover:text-primary transition"
-              >
-                Community
-              </Link>
-              <Link
-                to="/favorites"
-                className="text-gray-300 hover:text-primary transition"
-              >
-                Favorites
-              </Link>
-            </div>
-          )}
+          <div className="hidden md:flex items-center space-x-6">
+            {user ? (
+              <>
+                <Link
+                  to="/dashboard"
+                  className="text-gray-300 hover:text-primary transition"
+                >
+                  Dashboard
+                </Link>
+                <Link
+                  to="/emergency"
+                  className="text-gray-300 hover:text-primary transition"
+                >
+                  Emergency
+                </Link>
+                <Link
+                  to="/incidents"
+                  className="text-gray-300 hover:text-primary transition"
+                >
+                  Incidents
+                </Link>
+                <Link
+                  to="/report-incident"
+                  className="text-gray-300 hover:text-primary transition"
+                >
+                  Report Incident
+                </Link>
+                <Link
+                  to="/community"
+                  className="text-gray-300 hover:text-primary transition"
+                >
+                  Community Help
+                </Link>
+                <Link
+                  to="/favorites"
+                  className="text-gray-300 hover:text-primary transition"
+                >
+                  Favorites
+                </Link>
+              </>
+            ) : (
+              <>
+                <Link
+                  to="/about"
+                  className="text-gray-300 hover:text-primary transition"
+                >
+                  About
+                </Link>
+                <Link
+                  to="/incidents"
+                  className="text-gray-300 hover:text-primary transition"
+                >
+                  View Incidents
+                </Link>
+                <Link
+                  to="/report-incident"
+                  className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition"
+                >
+                  Report Incident
+                </Link>
+              </>
+            )}
+          </div>
 
           {/* Right Side Actions */}
           <div className="flex items-center space-x-4">
@@ -104,50 +133,78 @@ export default function Navbar() {
         </div>
 
         {/* Mobile Menu */}
-        {isMenuOpen && user && (
+        {isMenuOpen && (
           <div className="md:hidden py-4 space-y-2">
-            <Link
-              to="/dashboard"
-              className="block px-4 py-2 text-gray-300 hover:bg-gray-700 rounded"
-              onClick={() => setIsMenuOpen(false)}
-            >
-              Dashboard
-            </Link>
-            <Link
-              to="/emergency"
-              className="block px-4 py-2 text-gray-300 hover:bg-gray-700 rounded"
-              onClick={() => setIsMenuOpen(false)}
-            >
-              Emergency
-            </Link>
-            <Link
-              to="/incidents"
-              className="block px-4 py-2 text-gray-300 hover:bg-gray-700 rounded"
-              onClick={() => setIsMenuOpen(false)}
-            >
-              Incidents
-            </Link>
-            <Link
-              to="/report-incident"
-              className="block px-4 py-2 text-gray-300 hover:bg-gray-700 rounded"
-              onClick={() => setIsMenuOpen(false)}
-            >
-              Report Incident
-            </Link>
-            <Link
-              to="/community"
-              className="block px-4 py-2 text-gray-300 hover:bg-gray-700 rounded"
-              onClick={() => setIsMenuOpen(false)}
-            >
-              Community
-            </Link>
-            <Link
-              to="/favorites"
-              className="block px-4 py-2 text-gray-300 hover:bg-gray-700 rounded"
-              onClick={() => setIsMenuOpen(false)}
-            >
-              Favorites
-            </Link>
+            {user ? (
+              <>
+                <Link
+                  to="/dashboard"
+                  className="block px-4 py-2 text-gray-300 hover:bg-gray-700 rounded"
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  Dashboard
+                </Link>
+                <Link
+                  to="/emergency"
+                  className="block px-4 py-2 text-gray-300 hover:bg-gray-700 rounded"
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  Emergency
+                </Link>
+                <Link
+                  to="/incidents"
+                  className="block px-4 py-2 text-gray-300 hover:bg-gray-700 rounded"
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  Incidents
+                </Link>
+                <Link
+                  to="/report-incident"
+                  className="block px-4 py-2 text-gray-300 hover:bg-gray-700 rounded"
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  Report Incident
+                </Link>
+                <Link
+                  to="/community"
+                  className="block px-4 py-2 text-gray-300 hover:bg-gray-700 rounded"
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  Community
+                </Link>
+                <Link
+                  to="/favorites"
+                  className="block px-4 py-2 text-gray-300 hover:bg-gray-700 rounded"
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  Favorites
+                </Link>
+              </>
+            ) : (
+              <>
+                <Link
+                  to="/about"
+                  className="block px-4 py-2 text-gray-300 hover:bg-gray-700 rounded"
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  About
+                </Link>
+                <Link
+                  to="/incidents"
+                  className="block px-4 py-2 text-gray-300 hover:bg-gray-700 rounded"
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  View Incidents
+                </Link>
+                <Link
+                  to="/report-incident"
+                  className="block px-4 py-2 bg-red-600 text-white hover:bg-red-700 rounded"
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  Report Incident
+                </Link>
+              </>
+            )}
           </div>
         )}
       </div>

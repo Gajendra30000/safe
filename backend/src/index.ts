@@ -15,6 +15,7 @@ import qnaRoutes from "./routes/qnaRoutes";
 import favoriteRoutes from "./routes/favoriteRoutes";
 import communityRoutes from "./routes/communityRoutes";
 import incidentRoutes from "./routes/incidentRoutes";
+import uploadRoutes from "./routes/uploadRoutes";
 
 import { notFound, errorHandler } from "./middleware/errorHandler";
 import { seedFAQs } from "./services/seedService";
@@ -44,6 +45,7 @@ app.use("/api/qna", qnaRoutes);
 app.use("/api/favorites", favoriteRoutes);
 app.use("/api/community", communityRoutes);
 app.use("/api/incidents", incidentRoutes);
+app.use("/api/upload", uploadRoutes);
 
 // Error handling
 app.use(notFound);

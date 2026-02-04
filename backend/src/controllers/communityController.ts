@@ -12,7 +12,7 @@ interface AuthenticatedRequest extends Request {
 
 export const createDiscussion = async (req: AuthenticatedRequest, res: Response) => {
   try {
-    const { title, content, category, tags } = req.body;
+    const { title, content, category, tags, latitude, longitude, imageUrl } = req.body;
     const userId = (req as any).userId;
 
     if (!userId) {
@@ -29,13 +29,28 @@ export const createDiscussion = async (req: AuthenticatedRequest, res: Response)
       });
     }
 
-    const discussion = await Discussion.create({
+    const discussionData: any = {
       title,
       content,
       author: userId,
       category: category || 'general',
       tags: tags || []
-    });
+    };
+
+    // Add image if provided
+    if (imageUrl) {
+      discussionData.imageUrl = imageUrl;
+    }
+
+    // Add location if provided
+    if (latitude && longitude) {
+      discussionData.location = {
+        type: 'Point',
+        coordinates: [longitude, latitude]
+      };
+    }
+
+    const discussion = await Discussion.create(discussionData);
 
     const populatedDiscussion = await Discussion.findById(discussion._id)
       .populate('author', 'name email');
@@ -44,18 +59,19 @@ export const createDiscussion = async (req: AuthenticatedRequest, res: Response)
       success: true,
       data: populatedDiscussion
     });
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error creating discussion:', error);
     res.status(500).json({
       success: false,
-      message: 'Failed to create discussion'
+      message: `${error.message}${error.errors ? ': ' + JSON.stringify(error.errors) : ''} | Stack: ${error.stack}`,
+      errors: error.errors
     });
   }
 };
 
 export const getDiscussions = async (req: Request, res: Response) => {
   try {
-    const { category, sort = 'recent', search, page = 1, limit = 20 } = req.query;
+    const { category, sort = 'recent', search, page = 1, limit = 20, radius, latitude, longitude } = req.query;
     const query: any = {};
 
     if (category && category !== 'all') {
@@ -64,6 +80,20 @@ export const getDiscussions = async (req: Request, res: Response) => {
 
     if (search) {
       query.$text = { $search: search as string };
+    }
+
+    // Add geolocation filter if radius and coordinates are provided
+    if (radius && radius !== 'all' && latitude && longitude) {
+      const radiusInMeters = Number(radius) * 1000; // Convert km to meters
+      query.location = {
+        $near: {
+          $geometry: {
+            type: 'Point',
+            coordinates: [Number(longitude), Number(latitude)]
+          },
+          $maxDistance: radiusInMeters
+        }
+      };
     }
 
     let sortOption: any = { createdAt: -1 };

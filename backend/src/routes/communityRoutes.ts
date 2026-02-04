@@ -28,6 +28,6 @@ router.post("/discussions/:id/replies", createReply);
 router.get("/discussions/:id/replies", getReplies);
 
 router.post("/vote", toggleVote);
-router.post("/votes", getUserVotes);
+router.get("/votes", getUserVotes);
 
 export default router;

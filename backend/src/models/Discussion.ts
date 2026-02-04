@@ -5,14 +5,14 @@ const discussionSchema = new mongoose.Schema({
     type: String,
     required: true,
     trim: true,
-    minlength: 10,
+    minlength: 3,
     maxlength: 200
   },
   content: {
     type: String,
     required: true,
     trim: true,
-    minlength: 20,
+    minlength: 5,
     maxlength: 5000
   },
   author: {
@@ -23,7 +23,7 @@ const discussionSchema = new mongoose.Schema({
   category: {
     type: String,
     required: true,
-    enum: ['frontend', 'backend', 'ai', 'safety', 'general', 'bugs'],
+    enum: ['safety-tips', 'housing-rent', 'recommendations', 'general'],
     default: 'general'
   },
   tags: [{
@@ -58,10 +58,26 @@ const discussionSchema = new mongoose.Schema({
   isClosed: {
     type: Boolean,
     default: false
+  },
+  imageUrl: {
+    type: String,
+    required: false
+  },
+  location: {
+    type: {
+      type: String,
+      enum: ['Point'],
+    },
+    coordinates: {
+      type: [Number],
+      required: false
+    }
   }
 }, {
   timestamps: true
 });
+
+discussionSchema.index({ location: '2dsphere' });
 
 discussionSchema.index({ title: 'text', content: 'text' });
 discussionSchema.index({ category: 1 });

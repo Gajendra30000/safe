@@ -76,19 +76,17 @@ export const getIncidents = async (req: Request, res: Response) => {
     if (latitude && longitude) {
       const radiusInMeters = radius ? parseFloat(radius as string) * 1000 : 5000; // default 5km
       filter.location = {
-        $near: {
-          $geometry: {
-            type: 'Point',
-            coordinates: [parseFloat(longitude as string), parseFloat(latitude as string)],
-          },
-          $maxDistance: radiusInMeters,
+        $geoWithin: {
+          $centerSphere: [
+            [parseFloat(longitude as string), parseFloat(latitude as string)],
+            radiusInMeters / 6378100, // Convert to radians (Earth radius in meters)
+          ],
         },
       };
     }
 
     const incidents = await Incident.find(filter)
       .populate('reportedBy', 'name email')
-      .populate('verifiedBy', 'name')
       .populate('comments.user', 'name')
       .sort({ createdAt: -1 })
       .limit(parseInt(limit as string))
@@ -129,7 +127,6 @@ export const getIncidentById = async (req: Request, res: Response) => {
 
     const incident = await Incident.findById(id)
       .populate('reportedBy', 'name email')
-      .populate('verifiedBy', 'name')
       .populate('comments.user', 'name');
 
     if (!incident) {
